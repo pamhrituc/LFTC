@@ -50,8 +50,6 @@ class Grammar:
         productions = self.get_productions_for(non_terminal)
         print(', '.join([' -> '.join(prod) for prod in productions]))
 
-    def get_right_hand_side_for(self, non_terminal):
-        pass
     def __str__(self):
         return 'Set of nonterminal symbols: N = { ' + ', '.join(self.N) + ' }\n' \
                 + 'Set of terminal symbols:  E = { ' + ', '.join(self.E) + ' }\n' \

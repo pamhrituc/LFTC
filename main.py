@@ -1,8 +1,14 @@
+from grammar import *
+import re
 '''
 W is the list of codifications from the PIF
 
 every production terminal needs to be replaced w/ it's code from the codification table
 '''
+def nonTerminalIn(string, G):
+    for nonterminal in G.N:
+        if nonterminal in string:
+            return nonterminal
 
 def closure(I, G):
     C = [I]
@@ -10,28 +16,43 @@ def closure(I, G):
     while ok:
         for c in C: #c is A->a.Bb
             #production is all the productions of B
-            for production in G.P:
+            productions = []
+            if c[1] in G.N:
+                productions = G.get_productions_for(c[1])
+            else:
+                if any(nonterminal in c[1] for nonterminal in G.N):
+                    productions = G.get_productions_for(nonTerminalIn(c[1], G))
+            for production in productions:
                 if production not in C:
                     C.append(production)
                     ok = True
-                else:
+                if production in C:
                     ok = False
+            if productions == []:
+                ok = False
     return C
 
-def goto(s, X):
-    #all productions w/ X on rhs
-    return closure(X, s)
+def goto(s, X, G):
+    #all productions w/ X on rhs of s
+    elems = []
+    closureList = []
+    for prod in s:
+        if X in prod[1]:
+            elems.append(prod)
+    for elem in elems:
+        closureList.append(closure(elem, G))
+    return closureList
 
 def Col_stariLR0(G):
     C = []
-    s0 = closure()
+    s0 = closure(G.get_productions_for("S'"), G)
     C.append(s0)
     ok = True
     while ok:
         for s in C:
-            for X in N:
-                if goto(s, X) and goto(s, X) not in C:
-                    C.append(goto(s, X))
+            for X in G.N:
+                if goto(s, X, G) and goto(s, X, G) not in C:
+                    C.append(goto(s, X, G))
                     ok = True
                 else:
                     ok = False
@@ -60,3 +81,10 @@ def anal_syntLR0():
                 if action(state) == 'error':
                     print("Error")
                     done = True
+
+g = Grammar.from_file("exemplu1.txt")
+#for p in g.P:
+#    print(p[0] + "->" + p[1])
+
+s0 = closure(("S'", "S"), g)
+print(goto(s0, "X", g))
