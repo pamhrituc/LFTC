@@ -10,23 +10,45 @@ def nonTerminalIn(string, G):
         if nonterminal in string:
             return nonterminal
 
+def terminalIn(string, G):
+    for nonterminal in G.E:
+        if nonterminal in string:
+            return nonterminal
+
+def shiftDot(rhs, G):
+    if "." not in rhs:
+        return "." + rhs
+    else:
+        if rhs[len(rhs) - 1] == '.':
+            return rhs
+        else:
+            rhsList = list(rhs)
+            if rhs.find(nonTerminalIn(rhs[rhs.find("."):], G)) == rhs.find(".") + 1:
+                k = nonTerminalIn(rhs[rhs.find("."):], G)
+            elif rhs.find(terminalIn(rhs[rhs.find("."):], G)) == rhs.find(".") + 1:
+                k = terminalIn(rhs[rhs.find("."):], G)
+            i = rhsList.index(".")
+            rhsList[i] = rhsList[i + len(k)]
+            rhsList[i + len(k)] = "."
+            rhs = ""
+            for elem in rhsList:
+                rhs += elem
+            return rhs
+
 def closure(I, G):
     C = [I]
     ok = True
     while ok:
-        for c in C: #c is A->a.Bb
+        for c in C: 
             #production is all the productions of B
-            productions = []
-            if c[1] in G.N:
-                productions = G.get_productions_for(c[1])
-            else:
-                if any(nonterminal in c[1] for nonterminal in G.N):
-                    productions = G.get_productions_for(nonTerminalIn(c[1], G))
+            productions = G.get_productions_for(nonTerminalIn(C[0][1], G))
+            
             for production in productions:
-                if production not in C:
-                    C.append(production)
+                prod = (production[0], shiftDot(production[1], G))
+                if prod not in C:
+                    C.append(prod)
                     ok = True
-                if production in C:
+                if prod in C:
                     ok = False
             if productions == []:
                 ok = False
@@ -40,7 +62,10 @@ def goto(s, X, G):
         if X in prod[1]:
             elems.append(prod)
     for elem in elems:
-        closureList.append(closure(elem, G))
+        if elem[1][len(elem) - 1] == ".":
+            closureList.append(elem)
+        else:
+            closureList.append(closure(elem, G))
     return closureList
 
 def Col_stariLR0(G):
@@ -86,5 +111,9 @@ g = Grammar.from_file("exemplu1.txt")
 #for p in g.P:
 #    print(p[0] + "->" + p[1])
 
-s0 = closure(("S'", "S"), g)
-print(goto(s0, "X", g))
+s = []
+s.append(closure(("S'", ".S"), g))
+print(s)
+print(goto(s[0], "c", g))
+
+print(shiftDot(shiftDot(shiftDot(shiftDot("abS", g), g), g), g))
