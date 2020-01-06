@@ -11,25 +11,33 @@ every production terminal needs to be replaced w/ it's code from the codificatio
 
 
 def Col_stariLR0(G):
-	C = []
+	NE = G.N + G.E  # terminals and non-terminals
+	C = []  # canonical collections of  states
+	productions_verified = []
 	s0 = State(closure(("S'", '.S'), G))
 	C.append(s0)
 	ok = True
 	while ok:
 		for s in C:
-			tNT = G.N + G.E
-			print(s.productions)
-			for X in tNT:
-				state = goto(s, X, G)
-				if state.productions != [] and state not in C:
-					C.append(state)
-					ok = True
-				else:
+			for X in NE:
+				state, prod_verified = goto(s, X, G)
+				if prod_verified and prod_verified in productions_verified:
 					ok = False
+					break
+				if state.productions:
+					C.append(state)
+					productions_verified.append(prod_verified)
+					# print(state.productions)
+			if not ok:
+				break
+		if not ok:
+			break
 	return C
 
-#We need a fuction to build the table
-#We need to add the input for the following function (page 75)
+'''
+We need a fuction to build the table
+We need to add the input for the following function (page 75)
+'''
 def anal_syntLR0():
 	j = 1
 	state = 0
@@ -69,30 +77,10 @@ def shiftDot(rhs, G):
 		if rhs[-1] == '.':
 			return rhs
 		else:
-
+			index = rhs.find(".")
 			rhsList = list(rhs)
-
-			nonTerminal = nonTerminalIn(rhs[rhs.find("."):], G)
-			print("nonterminal ")
-			print(nonTerminal)
-			terminal = terminalIn(rhs[rhs.find("."):], G)
-			print("terminal ")
-			print(terminal)
-			if nonTerminal:
-				print("ok")
-				if rhs.find(nonTerminal) == rhs.find(".") + 1:
-					k = nonTerminal
-					print("k=" + k)
-			else:
-				if rhs.find(terminal) == rhs.find(".") + 1:
-					k = terminal
-			i = rhsList.index(".")
-			rhsList[i] = rhsList[i + len(k)]
-			rhsList[i + len(k)] = "."
-			rhs = ""
-			for elem in rhsList:
-				rhs += elem
-			return rhs
+			rhsList[index], rhsList[index+1] = rhsList[index+1], rhsList[index]
+			return "".join(rhsList)
 
 def closure(I, G):
 	C = [I]
@@ -116,6 +104,8 @@ def closure(I, G):
 			if productions == []:
 				ok = False
 	return C
+
+
 '''
 Input:
 	s - state
@@ -126,7 +116,7 @@ Output:
 '''
 def goto(state, X, G):
 	#all productions w/ X on rhs of s
-	elems = [] #elems(productions) to do goto
+	elems = [] # elems(productions) to do goto
 	closureList = []
 	for prod in state.productions:
 		element = "." + X
@@ -138,54 +128,51 @@ def goto(state, X, G):
 			closureList.append(elem)
 		else:
 			closureList = closure(elem, G)
-	return State(closureList)
+	return [State(closureList), elems]
 
 
 g = Grammar.from_file("exemplu1.txt")
 #for p in g.P:
 #    print(p[0] + "->" + p[1])
 
-s0 = State([])
-s0.productions = closure(("S'", ".S"), g)
-print("\ns0:")
-print(s0.productions)
-print(s0.action(g.P))
+# s0 = State([])
+# s0.productions = closure(("S'", ".S"), g)
+# print("\ns0:")
+# print(s0.productions)
+# print(s0.action(g.P))
+#
+# s1, el = goto(s0, 'S', g)
+# print("\ns1:")
+# print(s1.productions)
+# print(s1.action(g.P))
+#
+#
+# s2, el = goto(s0, 'a', g)
+# print("\ns2:")
+# print(s2.productions)
+# print(s2.action(g.P))
+#
+# s3, el = goto(s2, 'A', g)
+# print("\ns3:")
+# print(s3.productions)
+# print(s3.action(g.P))
+#
+#
+# s4, el = goto(s2, 'b', g)
+# print("\ns4:")
+# print(s4.productions)
+# print(s4.action(g.P))
+#
+#
+# s5, el = goto(s2, 'c', g)
+# print("\ns5:")
+# print(s5.productions)
+# print(s5.action(g.P))
 
-s1 = goto(s0, 'S', g)
-print("\ns1:")
-print(s1.productions)
-print(s1.action(g.P))
 
-
-s2 = goto(s0, 'a', g)
-print("\ns2:")
-print(s2.productions)
-print(s2.action(g.P))
-
-s3 = goto(s2, 'A', g)
-print("\ns3:")
-print(s3.productions)
-print(s3.action(g.P))
-
-
-s4 = goto(s2, 'b', g)
-print("\ns4:")
-print(s4.productions)
-print(s4.action(g.P))
-
-
-s5 = goto(s2, 'c', g)
-print("\ns5:")
-print(s5.productions)
-print(s5.action(g.P))
-
-
-state = State(closure(("S'", "S."), g))
-print(state)
-print(state.action(g.P))
-
-# print(shiftDot(shiftDot(shiftDot(shiftDot("abS", g), g), g), g))
+C = Col_stariLR0(g)
 print("C:")
-print(Col_stariLR0(g))
+for s in C:
+	print(s.productions)
 
 
