@@ -15,7 +15,7 @@ def Col_stariLR0(G):
 	C = []  # canonical collections of  states
 	productions_verified = []
 	index = 0
-	s0 = State(closure(("S'", '.S'), G))
+	s0 = State(closure(("S'", "." + G.N[0]), G))
 	C.append(s0)
 	s0.set_index(index)
 	ok = True
@@ -23,9 +23,11 @@ def Col_stariLR0(G):
 		for s in C:
 			for X in NE:
 				state, prod_verified = goto(s, X, G)
+
 				if prod_verified and prod_verified in productions_verified:
 					s.add_goto_value((X, productions_verified.index(prod_verified) + 1))
 					ok = False
+
 				if state.productions and ok:
 					C.append(state)
 					index = index + 1
@@ -65,28 +67,38 @@ def terminalIn(string, G):
 			return nonterminal
 
 def shiftDot(rhs, G):
-    if "." not in rhs:
-        return "." + rhs
-    else:
-        if rhs[len(rhs) - 1] == '.':
-            return rhs
-        else:
-            rhsList = list(rhs)
-            nonTerminal = nonTerminalIn(rhs[rhs.find("."):], G)
-            terminal = terminalIn(rhs[rhs.find("."):], G)
-            if nonTerminal:
-                if rhs.find(nonTerminal) == rhs.find(".") + 1:
-                    k = nonTerminal
-            if terminal:
-                if rhs.find(terminal) == rhs.find(".") + 1:
-                    k = terminal
-            i = rhsList.index(".")
-            rhsList[i] = rhsList[i + len(k)]
-            rhsList[i + len(k)] = "."
-            rhs = ""
-            for elem in rhsList:
-                rhs += elem
-            return rhs
+	if "." not in rhs:
+		return "." + rhs
+	else:
+		if rhs[len(rhs) - 1] == '.':
+			return rhs
+		else:
+			rhs_list = list(rhs)
+
+			non_terminal = nonTerminalIn(rhs[rhs.find("."):], G)
+			terminal = terminalIn(rhs[rhs.find("."):], G)
+
+			dot_pos = rhs.find('.')
+			# print("\nrhs = " + rhs)
+			if non_terminal and rhs[dot_pos:].find(non_terminal) == 1:
+					k = non_terminal
+					# print("k = " + k)
+			else:
+				if terminal and rhs[dot_pos:].find(terminal) == 1:
+					k = terminal
+					# print("k = " + k)
+
+			i = rhs_list.index(".")
+			# print("k = " + str(k))
+			for j in range(i, i + len(k)):
+				rhs_list[j] = rhs_list[j+1]
+
+			rhs_list[i + len(k)] = "."
+
+			rhs = ""
+			for elem in rhs_list:
+				rhs += elem
+			return rhs
 
 def closure(I, G):
 	C = [I]
@@ -146,15 +158,15 @@ def anal_syntLR0(input_stack, C, G):
 	done = False
 	P = G.P
 	while not done:
-		print("\nwork stack: ")
-		print(work_stack)
-		print("output: ")
-		print(output)
+		# print("\nwork stack: ")
+		# print(work_stack)
+		# print("output: ")
+		# print(output)
 		state = C[work_stack[-1]]
 		action = state.action(P)
 
 		if action == "SHIFT":
-			print("entered shift")
+			# print("entered shift")
 			val = input_stack[0]
 			found = False
 			for goto_val in state.goto_values:
@@ -171,7 +183,7 @@ def anal_syntLR0(input_stack, C, G):
 				break
 
 		elif "REDUCE" in action:
-			print("entered reduce")
+			# print("entered reduce")
 			prod_index = action[6:]
 			output.append(prod_index)
 
@@ -229,7 +241,7 @@ def anal_syntLR0(input_stack, C, G):
 	# 				print("Error")
 	# 				done = True
 
-g = Grammar.from_file("exemplu1.txt")
+# g = Grammar.from_file("exemplu1.txt")
 
 #for p in g.P:
 #    print(p[0] + "->" + p[1])
@@ -267,27 +279,25 @@ g = Grammar.from_file("exemplu1.txt")
 # print("\ns5:")
 # print(s5.productions)
 # print(s5.action(g.P))
+g = Grammar.from_file("example2.txt")
 
 
 C = Col_stariLR0(g)
 print("C:")
 for s in C:
-	print("s" + str(s.index))
-	print(s.productions)
-	print(s.action(g.P))
-	print("goto values:")
-	print(s.goto_values)
-	print("\n")
+    print("s" + str(s.index))
+    print(s.productions)
+    print(s.action(g.P))
+    print("goto values:")
+    print(s.goto_values)
+    print("\n")
 
+# input_stack = ["a", "b", "b", "c"]
+input_stack = ["a"]
 
-# work_stack = ['$', 0]
-# action = work_stack[-1]
-#
-# print(C[work_stack[-1]].productions)
-input_stack = ["a", "b", "b", "a"]
-# input_stack.pop()
-# print(input_stack)
 anal_syntLR0(input_stack, C, g)
+
+
 
 
 

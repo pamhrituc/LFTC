@@ -1,0 +1,29 @@
+N={identifier, letter, digit, nonzero_digit, integer, char, const_char, string, list_declaration, declaration, type1, type, integer_list, integers, cmpd_stmt, stmt_list, stmt, simple_stmt, assignment_stmt, expression, term, factor, io_stmt, struct_stmt, if_stmt, while_stmt, condition, operator, relation  identifier, letter, digit , nonzero_digit, integer, char, const_char, string, list_declaration, declaration, type1, type, integer_list, integers, cmpd_stmt, stmt_list, stmt, simple_stmt, assignment_stmt, expression, term, factor, io_stmt, struct_stmt, if_stmt, while_stmt, condition, operator, relation }
+E={a, b, c, d, e, z, A, B, C, Z, 0, 1, 2, 9, +,  -,  *,  /,  =,  <,  <=,   >=,  >, (, ), [, ], “, ‘, if, then, else, while, do, char, integer, begin, end, write, read}
+S={S'}
+P={S'->program,
+ program -> var list_decalration ; cmpd_stmt ;,
+ list_declaration -> declaration | declaration ; list_declaration,
+ declaration -> type identifier,
+ identifier -> letter { letter | digit },
+ letter -> A | B | Z | a | b | z,
+ nonzero_digit -> 1 | 2 | 9},
+ digit -> 0 | nonzero_digit,
+ stmt_list -> stmt | stmt ; stmt_list,
+stmt -> simple_stmt | struct_stmt,
+simple_stmt -> assignment_stmt | io_stmt,
+assignment_stmt -> identifier = expression,
+expression -> expression operator term | term,
+term -> term operator factor | factor,
+factor -> ( expression ) | identifier| constant,
+io_stmt -> read identifier | write ( identifier | constant),
+struct_stmt-> cmpd_stmt | if_stmt | while_stmt,
+if_stmt -> if condition then stmt [else stmt],
+while_stmt -> while condition do stmt,
+condition -> expression RELATION expression,
+identifier -> letter { letter | digit },
+letter -> A | B | ... | Z | a | b | z,
+digit -> 0 | 1 |...| 9,
+operator -> + | – | * | /,
+relation -> < | <= | == | >= | > | !=}
+

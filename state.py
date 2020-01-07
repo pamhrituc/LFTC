@@ -12,7 +12,11 @@ class State:
 
 	def action(self, P):
 		if len(self.productions) == 1:
+			# print("nooooow")
+			# print(self.productions)
 			prod = (self.productions[0][0], self.productions[0][1][:-1])
+			# print("prod")
+			# print(prod)
 			if prod == P[0]:
 				return "ACCEPT"
 			else:
