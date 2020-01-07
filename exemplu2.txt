@@ -1,4 +1,4 @@
-N={program, decl, stmt}
-E={;}
+N={program, decllist, declaration, stmt, type, identifier}
+E={;, _}
 S={S'}
-P={S'->program, program->decl;stmt}
+P={S'->program, program->decllist;stmt, decllist->declaration, decllist->declaration;decllist}

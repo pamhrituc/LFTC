@@ -1,15 +1,7 @@
 import copy
 from grammar import *
-import re
 
 from state import State
-
-'''
-W is the list of codifications from the PIF
-
-every production terminal needs to be replaced w/ it's code from the codification table
-'''
-
 
 def Col_stariLR0(G):
 	NE = G.N + G.E  # terminals and non-terminals
@@ -20,6 +12,7 @@ def Col_stariLR0(G):
 	C.append(s0)
 	s0.set_index(index)
 	ok = True
+	isLR0 = True
 	while ok:
 		for s in C:
 			for X in NE:
@@ -29,13 +22,28 @@ def Col_stariLR0(G):
 					s.add_goto_value((X, productions_verified.index(prod_verified) + 1))
 					ok = False
 
+				if state.action(G.P) == "ERROR1":
+					print("We have an accept conflict, thus this grammar isn't of type LR0")
+					isLR0 = False
+					ok = False
+				if state.action(G.P) == "ERROR2":
+					print("We have shift - reduce conflict, thus this grammar isn't of type LR0")
+					isLR0 = False
+					ok = False
+				if state.action(G.P) == "ERROR3":
+					print("We have an reduce - reduce conflict, thus this grammar isn't of type LR0")
+					isLR0 = False
+					ok = False
+				
+				if not isLR0:
+					return False
+
 				if state.productions and ok:
 					C.append(state)
 					index = index + 1
 					state.set_index(index)
 					s.add_goto_value((X, state.index))
 					productions_verified.append(prod_verified)
-					# print(state.productions)
 			if not ok:
 				break
 		if not ok:
@@ -71,7 +79,6 @@ def shiftDot(rhs, G):
 	rhsCopy = copy.deepcopy(rhs)
 	dotIndex = rhs.find('.')
 	rhs = rhs.replace('.', '')
-	print(dotIndex)
 	currentWord = ""
 	indexFound = -1
 	tNT = G.N + G.E
@@ -132,25 +139,17 @@ def goto(state, X, G):
 			closureList = closure(elem, G)
 	return [State(closureList), elems]
 
-'''
-We need a fuction to build the table
-We need to add the input for the following function (page 75)
-'''
 def anal_syntLR0(input_stack, C, G):
 	work_stack = ['$', 0]
 	output = []
 	done = False
 	P = G.P
 	while not done:
-		# print("\nwork stack: ")
-		# print(work_stack)
-		# print("output: ")
-		# print(output)
 		state = C[work_stack[-1]]
 		action = state.action(P)
 
 		if action == "SHIFT":
-			# print("entered shift")
+			print("entered shift")
 			val = input_stack[0]
 			found = False
 			for goto_val in state.goto_values:
@@ -167,7 +166,7 @@ def anal_syntLR0(input_stack, C, G):
 				break
 
 		elif "REDUCE" in action:
-			# print("entered reduce")
+			print("entered reduce")
 			prod_index = action[6:]
 			output.append(prod_index)
 
@@ -195,84 +194,32 @@ def anal_syntLR0(input_stack, C, G):
 		elif action == "ACCEPT":
 			print("Success")
 			str = "".join(output)
-			print(str[::-1])
+			print("Output: " + str[::-1])
 			break
 
 		else:
 			print("Error")
 			break
 
+def main():
+	g = Grammar.from_file("exemplu2.txt")
+	
+	C = Col_stariLR0(g)
+	if not C:
+		print("Grammar is not of type LR0")
+	else:
+		print("C:")
+		for s in C:
+			print("s" + str(s.index))
+			print(s.productions)
+			print(s.action(g.P))
+			print("goto values:")
+			print(s.goto_values)
+			print("\n")
 
-	# while done != True:
-	# 	action = state.action(P)
-	# 	if action == 'SHIFT':
-	# 		stack.append(a[j])
-	# 		j += 1
-	# 	else:
-	# 		if 'REDUCE' in action:
-	# 			index = action[6:]
-	#
-	# 			pass
-	# 		else:
-	# 			if action == 'ACCEPT':
-	# 				print("Success")
-	# 				print(out)
-	# 				done = True
-	# 			else:
-	# 				print("Error")
-	# 				done = True
+		#input_stack = ["a", "b", "b", "c"]
+		input_stack = ["decl", ";", "stmt", "type", "_", "identifier"]
 
-# g = Grammar.from_file("exemplu1.txt")
+		anal_syntLR0(input_stack, C, g)
 
-#for p in g.P:
-#    print(p[0] + "->" + p[1])
-
-# s0 = State([])
-# s0.productions = closure(("S'", ".S"), g)
-# print("\ns0:")
-# print(s0.productions)
-# print(s0.action(g.P))
-#
-# s1, el = goto(s0, 'S', g)
-# print("\ns1:")
-# print(s1.productions)
-# print(s1.action(g.P))
-#
-#
-# s2, el = goto(s0, 'a', g)
-# print("\ns2:")
-# print(s2.productions)
-# print(s2.action(g.P))
-#
-# s3, el = goto(s2, 'A', g)
-# print("\ns3:")
-# print(s3.productions)
-# print(s3.action(g.P))
-#
-#
-# s4, el = goto(s2, 'b', g)
-# print("\ns4:")
-# print(s4.productions)
-# print(s4.action(g.P))
-#
-#
-# s5, el = goto(s2, 'c', g)
-# print("\ns5:")
-# print(s5.productions)
-# print(s5.action(g.P))
-g = Grammar.from_file("exemplu2.txt")
-
-C = Col_stariLR0(g)
-print("C:")
-for s in C:
-    print("s" + str(s.index))
-    print(s.productions)
-    print(s.action(g.P))
-    print("goto values:")
-    print(s.goto_values)
-    print("\n")
-
-input_stack = ["a", "b", "b", "c"]
-#input_stack = ["a", "a"]
-
-anal_syntLR0(input_stack, C, g)
+main()
