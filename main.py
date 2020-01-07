@@ -156,12 +156,19 @@ def anal_syntLR0(input_stack, C, G):
 		if action == "SHIFT":
 			print("entered shift")
 			val = input_stack[0]
+			found = False
 			for goto_val in state.goto_values:
 				if val == goto_val[0]:
 					work_stack.append(val)
 					work_stack.append(goto_val[1])
 					input_stack.pop(0)
+					found = True
 					break
+				else:
+					found = False
+			if not found:
+				print("Error")
+				break
 
 		elif "REDUCE" in action:
 			print("entered reduce")
@@ -176,11 +183,18 @@ def anal_syntLR0(input_stack, C, G):
 
 			val = production[0]
 			state = C[work_stack[-1]]
+			found = True
 			for goto_val in state.goto_values:
 				if val == goto_val[0]:
 					work_stack.append(val)
 					work_stack.append(goto_val[1])
+					found = True
 					break
+				else:
+					found = False
+			if not found:
+				print("Error")
+				break
 
 		elif action == "ACCEPT":
 			print("Success")
@@ -270,7 +284,7 @@ for s in C:
 # action = work_stack[-1]
 #
 # print(C[work_stack[-1]].productions)
-input_stack = ["a", "b", "b", "c"]
+input_stack = ["a", "b", "b", "a"]
 # input_stack.pop()
 # print(input_stack)
 anal_syntLR0(input_stack, C, g)
