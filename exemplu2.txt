@@ -1,4 +1,4 @@
-N={program, decllist, declaration, stmt, type, identifier}
-E={;, _}
+N={program, declaration, stmt, constant, identifier}
+E={00, 01, 08, 09, 31}
 S={S'}
-P={S'->program, program->decllist;stmt, decllist->declaration, decllist->declaration;decllist}
+P={S'->program, program->31stmt, stmt->08identifier, stmt->09constant, stmt->09constant, identifier->00, constant->01}

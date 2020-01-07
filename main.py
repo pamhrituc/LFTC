@@ -188,7 +188,7 @@ def anal_syntLR0(input_stack, C, G):
 				else:
 					found = False
 			if not found:
-				print("Error")
+				print("Error: Couldn't find production")
 				break
 
 		elif action == "ACCEPT":
@@ -218,7 +218,7 @@ def main():
 			print("\n")
 
 		#input_stack = ["a", "b", "b", "c"]
-		input_stack = ["decl", ";", "stmt", "type", "_", "identifier"]
+		input_stack = ["31", "09", "01"]
 
 		anal_syntLR0(input_stack, C, g)
 

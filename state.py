@@ -15,8 +15,10 @@ class State:
 			prod = (self.productions[0][0], self.productions[0][1].replace('.', ''))
 			if prod == P[0]:
 				return "ACCEPT"
-			else:
+			if self.productions[0][1][-1] == ".":
 				return "REDUCE" + str(P.index(prod))
+			else:
+				return "SHIFT"
 		else:
 			ok = -1
 			sr = -1
