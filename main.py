@@ -1,3 +1,4 @@
+import copy
 from grammar import *
 import re
 
@@ -67,38 +68,21 @@ def terminalIn(string, G):
 			return nonterminal
 
 def shiftDot(rhs, G):
-	if "." not in rhs:
-		return "." + rhs
-	else:
-		if rhs[len(rhs) - 1] == '.':
-			return rhs
-		else:
-			rhs_list = list(rhs)
-
-			non_terminal = nonTerminalIn(rhs[rhs.find("."):], G)
-			terminal = terminalIn(rhs[rhs.find("."):], G)
-
-			dot_pos = rhs.find('.')
-			# print("\nrhs = " + rhs)
-			if non_terminal and rhs[dot_pos:].find(non_terminal) == 1:
-					k = non_terminal
-					# print("k = " + k)
-			else:
-				if terminal and rhs[dot_pos:].find(terminal) == 1:
-					k = terminal
-					# print("k = " + k)
-
-			i = rhs_list.index(".")
-			# print("k = " + str(k))
-			for j in range(i, i + len(k)):
-				rhs_list[j] = rhs_list[j+1]
-
-			rhs_list[i + len(k)] = "."
-
-			rhs = ""
-			for elem in rhs_list:
-				rhs += elem
-			return rhs
+	rhsCopy = copy.deepcopy(rhs)
+	dotIndex = rhs.find('.')
+	rhs = rhs.replace('.', '')
+	print(dotIndex)
+	currentWord = ""
+	indexFound = -1
+	tNT = G.N + G.E
+	for index in range(dotIndex, len(rhs)):
+		currentWord += rhs[index]
+		if currentWord in tNT:
+			indexFound = index
+			break
+	rhs = rhs[:indexFound + 1] + "." + rhs[indexFound + 1:]
+	return rhs
+				
 
 def closure(I, G):
 	C = [I]
@@ -276,8 +260,7 @@ def anal_syntLR0(input_stack, C, G):
 # print("\ns5:")
 # print(s5.productions)
 # print(s5.action(g.P))
-g = Grammar.from_file("example2.txt")
-
+g = Grammar.from_file("exemplu2.txt")
 
 C = Col_stariLR0(g)
 print("C:")
@@ -289,12 +272,7 @@ for s in C:
     print(s.goto_values)
     print("\n")
 
-# input_stack = ["a", "b", "b", "c"]
-input_stack = ["a", "a"]
+input_stack = ["a", "b", "b", "c"]
+#input_stack = ["a", "a"]
 
 anal_syntLR0(input_stack, C, g)
-
-
-
-
-

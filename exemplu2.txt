@@ -1,0 +1,4 @@
+N={program, decl, stmt}
+E={;}
+S={S'}
+P={S'->program, program->decl;stmt}
