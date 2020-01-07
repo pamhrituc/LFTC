@@ -219,9 +219,6 @@ def anal_syntLR0(input_stack, C, G):
 			break
 
 
-
-
-
 	# while done != True:
 	# 	action = state.action(P)
 	# 	if action == 'SHIFT':
@@ -293,7 +290,7 @@ for s in C:
     print("\n")
 
 # input_stack = ["a", "b", "b", "c"]
-input_stack = ["a"]
+input_stack = ["a", "a"]
 
 anal_syntLR0(input_stack, C, g)
 

@@ -1,4 +1,4 @@
 N={S, program}
 E={a}
 S={S'}
-P={S'->S, S->program, program->a}
+P={S'->S, S->aprogram, program->a}
