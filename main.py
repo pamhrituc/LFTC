@@ -14,18 +14,23 @@ def Col_stariLR0(G):
 	NE = G.N + G.E  # terminals and non-terminals
 	C = []  # canonical collections of  states
 	productions_verified = []
+	index = 0
 	s0 = State(closure(("S'", '.S'), G))
 	C.append(s0)
+	s0.set_index(index)
 	ok = True
 	while ok:
 		for s in C:
 			for X in NE:
 				state, prod_verified = goto(s, X, G)
 				if prod_verified and prod_verified in productions_verified:
+					s.add_goto_value((X, productions_verified.index(prod_verified) + 1))
 					ok = False
-					break
-				if state.productions:
+				if state.productions and ok:
 					C.append(state)
+					index = index + 1
+					state.set_index(index)
+					s.add_goto_value((X, state.index))
 					productions_verified.append(prod_verified)
 					# print(state.productions)
 			if not ok:
@@ -34,31 +39,20 @@ def Col_stariLR0(G):
 			break
 	return C
 
-'''
-We need a fuction to build the table
-We need to add the input for the following function (page 75)
-'''
-def anal_syntLR0():
-	j = 1
-	state = 0
-	stack = ['$']
-	out = ""
-	done = False
-	while done != True:
-		if state.action(g.P) == 'shift':
-			stack.append(a[j])
-			j += 1
-		else:
-			if state.action(g.P) == 'reduce':
-				pass
-			else:
-				if state.action(g.P) == 'accept':
-					print("Success")
-					print(out)
-					done = True
-				if state.action(g.P) == 'error':
-					print("Error")
-					done = True
+def count(rhs, G):
+	tNT = G.N + G.E
+	nonTerminal = nonTerminalIn(rhs, G)
+	terminal = terminalIn(rhs, G)
+	k = 0
+	if terminal:
+		if rhs[:len(terminal)] == terminal:
+			k += 1
+			rhs = rhs[len(terminal):]
+	if nonTerminal:
+		if rhs[:len(nonTerminal)] == nonTerminal:
+			k += 1
+			rhs = rhs[:len(nonTerminal)]
+	return k
 
 def nonTerminalIn(string, G):
 	for nonterminal in G.N:
@@ -71,16 +65,28 @@ def terminalIn(string, G):
 			return nonterminal
 
 def shiftDot(rhs, G):
-	if "." not in rhs:
-		return "." + rhs
-	else:
-		if rhs[-1] == '.':
-			return rhs
-		else:
-			index = rhs.find(".")
-			rhsList = list(rhs)
-			rhsList[index], rhsList[index+1] = rhsList[index+1], rhsList[index]
-			return "".join(rhsList)
+    if "." not in rhs:
+        return "." + rhs
+    else:
+        if rhs[len(rhs) - 1] == '.':
+            return rhs
+        else:
+            rhsList = list(rhs)
+            nonTerminal = nonTerminalIn(rhs[rhs.find("."):], G)
+            terminal = terminalIn(rhs[rhs.find("."):], G)
+            if nonTerminal:
+                if rhs.find(nonTerminal) == rhs.find(".") + 1:
+                    k = nonTerminal
+            if terminal:
+                if rhs.find(terminal) == rhs.find(".") + 1:
+                    k = terminal
+            i = rhsList.index(".")
+            rhsList[i] = rhsList[i + len(k)]
+            rhsList[i + len(k)] = "."
+            rhs = ""
+            for elem in rhsList:
+                rhs += elem
+            return rhs
 
 def closure(I, G):
 	C = [I]
@@ -130,8 +136,87 @@ def goto(state, X, G):
 			closureList = closure(elem, G)
 	return [State(closureList), elems]
 
+'''
+We need a fuction to build the table
+We need to add the input for the following function (page 75)
+'''
+def anal_syntLR0(input_stack, C, G):
+	work_stack = ['$', 0]
+	output = []
+	done = False
+	P = G.P
+	while not done:
+		print("\nwork stack: ")
+		print(work_stack)
+		print("output: ")
+		print(output)
+		state = C[work_stack[-1]]
+		action = state.action(P)
+
+		if action == "SHIFT":
+			print("entered shift")
+			val = input_stack[0]
+			for goto_val in state.goto_values:
+				if val == goto_val[0]:
+					work_stack.append(val)
+					work_stack.append(goto_val[1])
+					input_stack.pop(0)
+					break
+
+		elif "REDUCE" in action:
+			print("entered reduce")
+			prod_index = action[6:]
+			output.append(prod_index)
+
+			production = P[int(prod_index)]
+
+			nr = count(production[1], G) * 2
+			for i in range(nr):
+				work_stack.pop()
+
+			val = production[0]
+			state = C[work_stack[-1]]
+			for goto_val in state.goto_values:
+				if val == goto_val[0]:
+					work_stack.append(val)
+					work_stack.append(goto_val[1])
+					break
+
+		elif action == "ACCEPT":
+			print("Success")
+			str = "".join(output)
+			print(str[::-1])
+			break
+
+		else:
+			print("Error")
+			break
+
+
+
+
+
+	# while done != True:
+	# 	action = state.action(P)
+	# 	if action == 'SHIFT':
+	# 		stack.append(a[j])
+	# 		j += 1
+	# 	else:
+	# 		if 'REDUCE' in action:
+	# 			index = action[6:]
+	#
+	# 			pass
+	# 		else:
+	# 			if action == 'ACCEPT':
+	# 				print("Success")
+	# 				print(out)
+	# 				done = True
+	# 			else:
+	# 				print("Error")
+	# 				done = True
 
 g = Grammar.from_file("exemplu1.txt")
+
 #for p in g.P:
 #    print(p[0] + "->" + p[1])
 
@@ -173,6 +258,22 @@ g = Grammar.from_file("exemplu1.txt")
 C = Col_stariLR0(g)
 print("C:")
 for s in C:
+	print("s" + str(s.index))
 	print(s.productions)
+	print(s.action(g.P))
+	print("goto values:")
+	print(s.goto_values)
+	print("\n")
+
+
+# work_stack = ['$', 0]
+# action = work_stack[-1]
+#
+# print(C[work_stack[-1]].productions)
+input_stack = ["a", "b", "b", "c"]
+# input_stack.pop()
+# print(input_stack)
+anal_syntLR0(input_stack, C, g)
+
 
 

@@ -1,6 +1,14 @@
 class State:
 	def __init__(self, productions):
 		self.productions = productions
+		self.goto_values = []
+		self.index = -1
+
+	def add_goto_value(self, values):
+		self.goto_values.append(values)
+
+	def set_index(self, index):
+		self.index = index
 
 	def action(self, P):
 		if len(self.productions) == 1:
